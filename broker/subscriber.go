@@ -24,28 +24,32 @@ func CreateNewSubscriber() *Subscriber {
 	}
 }
 
-func (s *Subscriber) AddTopic(topic string) {
+func (s *Subscriber) AddTopic(topic string) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	s.topics[topic] = true
+	return nil
 }
 
-func (s *Subscriber) RemoveTopic(topic string) {
+func (s *Subscriber) RemoveTopic(topic string) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	delete(s.topics, topic)
+	return nil
 }
 
-func (s *Subscriber) Send(msg *bp.Message) {
+func (s *Subscriber) Send(msg *bp.Message) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	if !s.closed {
 		s.receiver <- msg
 	}
+	return nil
 }
 
-func (s *Subscriber) Close() {
+func (s *Subscriber) Close() error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	s.closed = true
+	return nil
 }

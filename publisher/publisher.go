@@ -29,7 +29,11 @@ func NewPublisher(target string) (*Publisher, error) {
 	}, nil
 }
 
-func (p *Publisher) Publish(topic string, msg *bp.Message) error {
-	_, err := p.client.Publish(p.ctx, msg)
+func (p *Publisher) Publish(topic string, msg string) error {
+	in := &bp.Message{
+		Topic:   topic,
+		Message: msg,
+	}
+	_, err := p.client.Publish(p.ctx, in)
 	return err
 }

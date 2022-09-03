@@ -3,4 +3,9 @@
 </p>
 
 # Pakhi
-gRPC based pub/sub service 
+```Pakhi``` is a gRPC based pub/sub service 
+
+## Getting Started
+
+### Install
+```go get github.com/urishabh12/pakhi```

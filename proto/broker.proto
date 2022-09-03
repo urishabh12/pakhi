@@ -1,0 +1,40 @@
+syntax="proto3";
+
+package broker;
+
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/urishabh12/pakhi/proto";
+
+service BrokerService {
+    rpc AddSubscriber(google.protobuf.Empty) returns (Subscriber) {}
+    rpc RemoveSubscriber(Subscriber) returns (Status) {}
+    rpc Subscribe(SubscribeRequest) returns (Status) {}
+    rpc Unsubscribe(UnsubscribeRequest) returns (Status) {}
+    rpc Publish(Message) returns (Status) {}
+    rpc Listen(Subscriber) returns (stream Message) {}
+}
+
+message Subscriber {
+    string id = 1;
+}
+
+message SubscribeRequest {
+    string id = 1;
+    string topic = 2;
+    string topics = 3;
+}
+
+message UnsubscribeRequest {
+    string id = 1;
+    string topic = 2;
+}
+
+message Message {
+    string topic = 1;
+    string message = 2;
+}
+
+message Status {
+    bool status = 1;
+}

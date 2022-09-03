@@ -40,6 +40,7 @@ func NewSubscriber(target string) (*Subscriber, error) {
 
 func (s *Subscriber) Subscribe(topic string) error {
 	in := &bp.SubscribeRequest{
+		Id:    s.id,
 		Topic: topic,
 	}
 	_, err := s.client.Subscribe(s.ctx, in)
@@ -48,6 +49,7 @@ func (s *Subscriber) Subscribe(topic string) error {
 
 func (s *Subscriber) Unsubscribe(topic string) error {
 	in := &bp.UnsubscribeRequest{
+		Id:    s.id,
 		Topic: topic,
 	}
 	_, err := s.client.Unsubscribe(s.ctx, in)

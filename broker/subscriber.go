@@ -19,7 +19,7 @@ func CreateNewSubscriber() *Subscriber {
 	return &Subscriber{
 		id:       uuid.New().String(),
 		topics:   make(map[string]bool),
-		receiver: make(chan *bp.Message),
+		receiver: make(chan *bp.Message, 10),
 		closed:   false,
 	}
 }
@@ -48,12 +48,12 @@ func (s *Subscriber) Send(msg *bp.Message) error {
 }
 
 func (s *Subscriber) Close() error {
-	s.lock.Lock()
-	defer s.lock.Unlock()
 	in := &bp.Message{
 		Closed: true,
 	}
 	s.Send(in)
+	s.lock.Lock()
+	defer s.lock.Unlock()
 	s.closed = true
 	return nil
 }

@@ -2,6 +2,7 @@ package subscriber
 
 import (
 	"context"
+	"errors"
 
 	empty "github.com/golang/protobuf/ptypes/empty"
 	bp "github.com/urishabh12/pakhi/proto"
@@ -77,6 +78,9 @@ func (s *Subscriber) Listen(fn ListenCallback) error {
 		resp, err := stream.Recv()
 		if err != nil {
 			return err
+		}
+		if resp.Closed {
+			return errors.New("the connection was closed by subscriber")
 		}
 		go func(*bp.Message) {
 			fn(resp)

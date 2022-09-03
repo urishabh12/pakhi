@@ -103,6 +103,10 @@ func (b *Broker) Listen(id string, str bp.BrokerService_ListenServer) error {
 			str.Send(msg)
 		}
 
+		if msg.Closed {
+			break
+		}
+
 		if !ok {
 			fmt.Printf("error occured while receiving msg for sub %s\n", id)
 			break

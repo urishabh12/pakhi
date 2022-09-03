@@ -50,6 +50,10 @@ func (s *Subscriber) Send(msg *bp.Message) error {
 func (s *Subscriber) Close() error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
+	in := &bp.Message{
+		Closed: true,
+	}
+	s.Send(in)
 	s.closed = true
 	return nil
 }

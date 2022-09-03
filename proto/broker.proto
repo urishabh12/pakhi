@@ -33,6 +33,7 @@ message UnsubscribeRequest {
 message Message {
     string topic = 1;
     string message = 2;
+    bool closed = 3;
 }
 
 message Status {

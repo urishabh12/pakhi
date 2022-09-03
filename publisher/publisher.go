@@ -19,7 +19,6 @@ func NewPublisher(target string) (*Publisher, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
 
 	c := bp.NewBrokerServiceClient(conn)
 

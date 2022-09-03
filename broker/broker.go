@@ -3,6 +3,7 @@ package broker
 import (
 	"errors"
 	"fmt"
+	"log"
 	"sync"
 
 	bp "github.com/urishabh12/pakhi/proto"
@@ -28,6 +29,7 @@ func (b *Broker) AddSubscriber() *Subscriber {
 	defer b.lock.RUnlock()
 	sub := CreateNewSubscriber()
 	b.subscriber[sub.id] = sub
+	log.Printf("subscriber %s has joined", sub.id)
 	return sub
 }
 
@@ -36,6 +38,7 @@ func (b *Broker) RemoveSubscriber(id string) error {
 		return fmt.Errorf("subscriber %s not subscribed", id)
 	}
 	b.subscriber[id].Close()
+	log.Printf("subscriber %s has left", id)
 	return nil
 }
 
@@ -52,6 +55,7 @@ func (b *Broker) Subscribe(id string, topic string) error {
 		b.topics[topic] = Subscribers{}
 	}
 	b.topics[topic][id] = b.subscriber[id]
+	log.Printf("subscriber %s has subscribed to %s", id, topic)
 	return nil
 }
 
@@ -68,6 +72,7 @@ func (b *Broker) Unsubscribe(id string, topic string) error {
 		return errors.New("topic is not subscribed by subscriber")
 	}
 	delete(b.topics[topic], id)
+	log.Printf("subscriber %s has unsubscribed to %s", id, topic)
 	return nil
 }
 

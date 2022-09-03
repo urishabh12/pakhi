@@ -1,9 +1,6 @@
-<p align="left">
-  <img src="https://img.icons8.com/material-outlined/344/peace-pigeon.png" width="40" height="40">
+<p align="center">
+  <img src="https://img.icons8.com/external-vitaliy-gorbachev-lineal-color-vitaly-gorbachev/344/external-pigeon-valentines-day-vitaliy-gorbachev-lineal-color-vitaly-gorbachev.png" width="150" height="150">
 </p>
 
 # Pakhi
-
-
-## Intro
 gRPC based pub/sub service 

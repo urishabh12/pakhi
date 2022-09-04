@@ -11,22 +11,28 @@ import (
 
 type Subscribers map[string]*Subscriber
 
+type Topic struct {
+	name        string
+	subscribers Subscribers
+	lock        sync.Mutex
+}
+
 type Broker struct {
 	subscriber Subscribers
-	topics     map[string]Subscribers
-	lock       sync.RWMutex
+	topics     map[string]*Topic
+	lock       sync.Mutex
 }
 
 func NewBroker() *Broker {
 	return &Broker{
 		subscriber: Subscribers{},
-		topics:     map[string]Subscribers{},
+		topics:     map[string]*Topic{},
 	}
 }
 
 func (b *Broker) AddSubscriber() *Subscriber {
-	b.lock.RLock()
-	defer b.lock.RUnlock()
+	b.lock.Lock()
+	defer b.lock.Unlock()
 	sub := CreateNewSubscriber()
 	b.subscriber[sub.id] = sub
 	log.Printf("subscriber %s has joined", sub.id)
@@ -52,6 +58,9 @@ func (b *Broker) GetSubscriberById(id string) (*Subscriber, error) {
 
 func (b *Broker) GetSubscribers() ([]*Subscriber, error) {
 	s := []*Subscriber{}
+
+	b.lock.Lock()
+	defer b.lock.Unlock()
 	for _, sub := range b.subscriber {
 		if sub.IsClosed() {
 			continue
@@ -62,38 +71,21 @@ func (b *Broker) GetSubscribers() ([]*Subscriber, error) {
 	return s, nil
 }
 
-func (b *Broker) Subscribe(id string, topic string) error {
-	if b.subscriber[id] == nil {
-		return fmt.Errorf("subscriber %s does not exist", id)
+func (b *Broker) SetTopic(topic string) {
+	b.topics[topic] = &Topic{
+		name:        topic,
+		subscribers: make(Subscribers),
 	}
-
-	b.subscriber[id].AddTopic(topic)
-
-	b.lock.RLock()
-	defer b.lock.RUnlock()
-	if b.topics[topic] == nil {
-		b.topics[topic] = Subscribers{}
-	}
-	b.topics[topic][id] = b.subscriber[id]
-	log.Printf("subscriber %s has subscribed to %s", id, topic)
-	return nil
 }
 
-func (b *Broker) Unsubscribe(id string, topic string) error {
-	if b.subscriber[id] == nil {
-		return fmt.Errorf("subscriber %s does not exist", id)
-	}
-
-	b.subscriber[id].RemoveTopic(topic)
-
-	b.lock.RLock()
-	defer b.lock.RUnlock()
+func (b *Broker) SetTopicIfNotExists(topic string) {
 	if b.topics[topic] == nil {
-		return errors.New("topic is not subscribed by subscriber")
+		b.lock.Lock()
+		if b.topics[topic] == nil {
+			b.SetTopic(topic)
+		}
+		b.lock.Unlock()
 	}
-	delete(b.topics[topic], id)
-	log.Printf("subscriber %s has unsubscribed to %s", id, topic)
-	return nil
 }
 
 func (b *Broker) GetTopicsBySubscriberId(id string) ([]string, error) {
@@ -111,8 +103,12 @@ func (b *Broker) GetSubscribersByTopic(topic string) ([]*Subscriber, error) {
 		return nil, errors.New("topic not registered by a subscriber")
 	}
 
+	b.SetTopicIfNotExists(topic)
+
 	subs := []*Subscriber{}
-	for _, sub := range b.topics[topic] {
+	b.topics[topic].lock.Lock()
+	defer b.topics[topic].lock.Unlock()
+	for _, sub := range b.topics[topic].subscribers {
 		if sub.IsClosed() {
 			continue
 		}
@@ -121,11 +117,42 @@ func (b *Broker) GetSubscribersByTopic(topic string) ([]*Subscriber, error) {
 	return subs, nil
 }
 
-func (b *Broker) Publish(msg *bp.Message) error {
-	if b.topics[msg.Topic] == nil {
-		return errors.New("topic not registered by a subscriber")
+func (b *Broker) Subscribe(id string, topic string) error {
+	if b.subscriber[id] == nil {
+		return fmt.Errorf("subscriber %s does not exist", id)
 	}
-	for _, s := range b.topics[msg.Topic] {
+	b.subscriber[id].AddTopic(topic)
+
+	b.SetTopicIfNotExists(topic)
+	b.topics[topic].lock.Lock()
+	defer b.topics[topic].lock.Unlock()
+	b.topics[topic].subscribers[id] = b.subscriber[id]
+	log.Printf("subscriber %s has subscribed to %s", id, topic)
+	return nil
+}
+
+func (b *Broker) Unsubscribe(id string, topic string) error {
+	if b.subscriber[id] == nil {
+		return fmt.Errorf("subscriber %s does not exist", id)
+	}
+
+	b.subscriber[id].RemoveTopic(topic)
+
+	b.SetTopicIfNotExists(topic)
+	b.topics[topic].lock.Lock()
+	defer b.topics[topic].lock.Unlock()
+	delete(b.topics[topic].subscribers, id)
+	log.Printf("subscriber %s has unsubscribed to %s", id, topic)
+	return nil
+}
+
+func (b *Broker) Publish(msg *bp.Message) error {
+	b.SetTopicIfNotExists(msg.Topic)
+
+	//TODO: run it as a go routine
+	b.topics[msg.Topic].lock.Lock()
+	defer b.topics[msg.Topic].lock.Unlock()
+	for _, s := range b.topics[msg.Topic].subscribers {
 		go func(s *Subscriber) {
 			if s.IsClosed() {
 				return

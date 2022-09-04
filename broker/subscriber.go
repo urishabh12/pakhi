@@ -28,6 +28,7 @@ func (s *Subscriber) AddTopic(topic string) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	s.topics[topic] = true
+
 	return nil
 }
 
@@ -35,7 +36,17 @@ func (s *Subscriber) RemoveTopic(topic string) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	delete(s.topics, topic)
+
 	return nil
+}
+
+func (s *Subscriber) GetTopics() []string {
+	t := []string{}
+	for topic := range s.topics {
+		t = append(t, topic)
+	}
+
+	return t
 }
 
 func (s *Subscriber) Send(msg *bp.Message) error {
@@ -44,6 +55,7 @@ func (s *Subscriber) Send(msg *bp.Message) error {
 	if !s.closed {
 		s.receiver <- msg
 	}
+
 	return nil
 }
 
@@ -55,5 +67,6 @@ func (s *Subscriber) Close() error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	s.closed = true
+
 	return nil
 }

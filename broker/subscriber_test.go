@@ -11,8 +11,8 @@ func Test_AddTopic(t *te.T) {
 	topic := "abc"
 	s.AddTopic(topic)
 	ok := false
-	for k := range s.topics {
-		if k == topic {
+	for _, t := range s.GetTopics() {
+		if t == topic {
 			ok = true
 		}
 	}
@@ -28,8 +28,8 @@ func Test_RemoveTopic(t *te.T) {
 	s.AddTopic(topic)
 	s.RemoveTopic(topic)
 	ok := true
-	for k := range s.topics {
-		if k == topic {
+	for _, t := range s.GetTopics() {
+		if t == topic {
 			ok = false
 		}
 	}

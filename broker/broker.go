@@ -96,9 +96,34 @@ func (b *Broker) Unsubscribe(id string, topic string) error {
 	return nil
 }
 
+func (b *Broker) GetTopicsBySubscriberId(id string) ([]string, error) {
+	sub, err := b.GetSubscriberById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	topics := sub.GetTopics()
+	return topics, nil
+}
+
+func (b *Broker) GetSubscribersByTopic(topic string) ([]*Subscriber, error) {
+	if b.topics[topic] == nil {
+		return nil, errors.New("topic not registered by a subscriber")
+	}
+
+	subs := []*Subscriber{}
+	for _, sub := range b.topics[topic] {
+		if sub.IsClosed() {
+			continue
+		}
+		subs = append(subs, sub)
+	}
+	return subs, nil
+}
+
 func (b *Broker) Publish(msg *bp.Message) error {
 	if b.topics[msg.Topic] == nil {
-		return errors.New("no subscriber for topic")
+		return errors.New("topic not registered by a subscriber")
 	}
 	for _, s := range b.topics[msg.Topic] {
 		go func(s *Subscriber) {

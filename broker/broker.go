@@ -43,7 +43,7 @@ func (b *Broker) RemoveSubscriber(id string) error {
 }
 
 func (b *Broker) GetSubscriberById(id string) (*Subscriber, error) {
-	if b.subscriber[id] == nil {
+	if b.subscriber[id] == nil || b.subscriber[id].IsClosed() {
 		return nil, errors.New("subscriber does not exists")
 	}
 
@@ -110,12 +110,13 @@ func (b *Broker) Publish(msg *bp.Message) error {
 }
 
 func (b *Broker) Listen(id string, str bp.BrokerService_ListenServer) error {
-	if b.subscriber[id] == nil {
-		return fmt.Errorf("subscriber %s does not exist", id)
+	sub, err := b.GetSubscriberById(id)
+	if err != nil {
+		return fmt.Errorf("subscriber %s does not exist\n %s", id, err)
 	}
 
 	for {
-		msg, ok := <-b.subscriber[id].receiver
+		msg, ok := <-sub.receiver
 		if ok {
 			str.Send(msg)
 		}

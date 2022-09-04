@@ -53,6 +53,9 @@ func (b *Broker) GetSubscriberById(id string) (*Subscriber, error) {
 func (b *Broker) GetSubscribers() ([]*Subscriber, error) {
 	s := []*Subscriber{}
 	for _, sub := range b.subscriber {
+		if sub.IsClosed() {
+			continue
+		}
 		s = append(s, sub)
 	}
 

@@ -42,6 +42,23 @@ func (b *Broker) RemoveSubscriber(id string) error {
 	return nil
 }
 
+func (b *Broker) GetSubscriberById(id string) (*Subscriber, error) {
+	if b.subscriber[id] == nil {
+		return nil, errors.New("subscriber does not exists")
+	}
+
+	return b.subscriber[id], nil
+}
+
+func (b *Broker) GetSubscribers() ([]*Subscriber, error) {
+	s := []*Subscriber{}
+	for _, sub := range b.subscriber {
+		s = append(s, sub)
+	}
+
+	return s, nil
+}
+
 func (b *Broker) Subscribe(id string, topic string) error {
 	if b.subscriber[id] == nil {
 		return fmt.Errorf("subscriber %s does not exist", id)
@@ -82,7 +99,7 @@ func (b *Broker) Publish(msg *bp.Message) error {
 	}
 	for _, s := range b.topics[msg.Topic] {
 		go func(s *Subscriber) {
-			if s.closed {
+			if s.IsClosed() {
 				return
 			}
 			s.Send(msg)

@@ -70,3 +70,7 @@ func (s *Subscriber) Close() error {
 
 	return nil
 }
+
+func (s *Subscriber) IsClosed() bool {
+	return s.closed
+}

@@ -54,7 +54,7 @@ func Test_CloseSubscriber(t *te.T) {
 	s := CreateNewSubscriber()
 	s.Close()
 
-	if !s.closed {
+	if !s.IsClosed() {
 		t.Fatal("subscriber not marked as closed")
 	}
 }

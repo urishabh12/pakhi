@@ -81,10 +81,10 @@ func (b *Broker) SetTopic(topic string) {
 func (b *Broker) SetTopicIfNotExists(topic string) {
 	if b.topics[topic] == nil {
 		b.lock.Lock()
+		defer b.lock.Unlock()
 		if b.topics[topic] == nil {
 			b.SetTopic(topic)
 		}
-		b.lock.Unlock()
 	}
 }
 

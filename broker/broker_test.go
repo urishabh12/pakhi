@@ -80,3 +80,70 @@ func Test_GetSubscribers(t *te.T) {
 		t.Error("broker did not returned same subscribers")
 	}
 }
+
+func Test_GetSubscribersAfterRemoving(t *te.T) {
+	b := NewBroker()
+	subs := make(map[string]bool)
+	for i := 0; i < 10; i++ {
+		s := b.AddSubscriber()
+		if i%2 == 0 {
+			b.RemoveSubscriber(s.id)
+			continue
+		}
+		subs[s.id] = true
+	}
+
+	subs_b, err := b.GetSubscribers()
+	if err != nil {
+		t.Error("error getting all subscribers")
+	}
+
+	if len(subs) != len(subs_b) {
+		t.Errorf("broker returned %d subscribers should have returned %d", len(subs_b), len(subs))
+	}
+
+	match_count := 0
+	for i := 0; i < len(subs_b); i++ {
+		if subs[subs_b[i].id] {
+			match_count++
+		}
+	}
+
+	if match_count != len(subs) {
+		t.Error("broker did not returned all valid subscribers")
+	}
+}
+
+func Test_SubscribeToATopic(t *te.T) {
+	b := NewBroker()
+	sub := b.AddSubscriber()
+
+	topics := map[string]bool{
+		"a": false,
+		"b": false,
+		"c": false,
+		"d": false,
+	}
+	for t := range topics {
+		b.Subscribe(sub.id, t)
+	}
+
+	topics_b, err := b.GetTopicsBySubscriberId(sub.id)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	if len(topics) != len(topics_b) {
+		t.Error("length of returned topics not equal")
+	}
+
+	for i := 0; i < len(topics_b); i++ {
+		topics[topics_b[i]] = true
+	}
+
+	for _, v := range topics {
+		if !v {
+			t.Fatal("topic did not exists for subscriber")
+		}
+	}
+}

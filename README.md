@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.icons8.com/external-vitaliy-gorbachev-lineal-color-vitaly-gorbachev/344/external-pigeon-valentines-day-vitaliy-gorbachev-lineal-color-vitaly-gorbachev.png" width="150" height="150">
+  <img src="https://img.icons8.com/external-vitaliy-gorbachev-lineal-color-vitaly-gorbachev/344/external-pigeon-valentines-day-vitaliy-gorbachev-lineal-color-vitaly-gorbachev.png" width="150" height="150" alt="pegion icon">
 </p>
 
 # Pakhi
@@ -8,4 +8,6 @@
 ## Getting Started
 
 ### Install
-```go get github.com/urishabh12/pakhi```
+```
+go get github.com/urishabh12/pakhi
+```
